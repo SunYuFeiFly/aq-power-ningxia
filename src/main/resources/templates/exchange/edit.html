@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/style/admin.css}" media="all">
+    <style>
+        .layui-table {
+            width: 100% !important;
+        }
+    </style>
+    <base th:href="${#request.getContextPath()}+'/'">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <input type="hidden" name="id" th:value="${goods.id}">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+
+            <table id="LAY-user-manage" lay-filter="LAY-user-manage"></table>
+            <script type="text/html" id="imgTpl">
+                <img style="display: inline-block; width: 50%; height: 100%;" src={{ d.cover }}>
+            </script>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/layui/layui.js}"></script>
+<script>
+    window.userGoods_id = [[${goods.id}]];
+    layui.config({
+        base: '' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'exchangeList', 'table', "upload2", "laydate", "layedit"], function () {
+        var $ = layui.jquery
+            , upload = layui.upload2;
+        var form = layui.form
+            , $ = layui.$
+            , table = layui.table
+            , layedit = layui.layedit
+            , laydate = layui.laydate;
+
+        laydate.render({
+            elem: '#startTime', //指定元素
+            type: 'datetime'
+        });
+
+        laydate.render({
+            elem: '#endTime', //指定元素
+            type: 'datetime'
+        });
+
+    });
+</script>
+</body>
+</html>

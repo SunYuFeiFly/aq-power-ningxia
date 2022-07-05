@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>查看</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/style/admin.css}" media="all">
+    <base th:href="${#request.getContextPath()}+'/'">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body" pad15 style="padding: 35px;">
+                    <div class="layui-form" lay-filter="">
+
+                        <div class="layui-form-item">
+
+                            <label class="layui-form-label" style="width: 180px"><strong>公司活跃导出 :</strong></label>
+                            <div class="layui-input-inline">
+                                <input type="text" class="layui-input" id="startTime" placeholder="yyyy-MM-dd" name="startTime" style="height:30px;width:180px;">
+                            </div>
+                            <label class="layui-form-label"> 结束日期：</label>
+                            <div class="layui-input-inline">
+                                <input type="text" class="layui-input" id="endTime" placeholder="yyyy-MM-dd" name="endTime" style="height:30px;width:180px;">
+                            </div>
+                            <!--&nbsp;&nbsp;-->
+                            <button class="layui-btn layuiadmin-btn-useradmin export" lay-event="export">导出</button>
+                        </div>
+
+                        <br/>
+                        <br/>
+                        <br/>
+                        <br/>
+                        <br/>
+                        <div class="layui-form-item">
+
+                            <label class="layui-form-label" style="width: 180px"><strong>个人活跃信息导出 :</strong></label>
+                            <div class="layui-input-inline">
+                                <input type="text" class="layui-input" id="startTime2" placeholder="yyyy-MM-dd" name="startTime2" style="height:30px;width:180px;">
+                            </div>
+                            <label class="layui-form-label"> 结束日期：</label>
+                            <div class="layui-input-inline">
+                                <input type="text" class="layui-input" id="endTime2" placeholder="yyyy-MM-dd" name="endTime2" style="height:30px;width:180px;">
+                            </div>
+                            &nbsp;&nbsp;
+                            <button class="layui-btn layuiadmin-btn-useradmin export2" lay-event="export2">导出</button>
+                        </div>
+
+                        <!--<div class="layui-form-item">-->
+
+                        <!--</div>-->
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/layui/layui.js}"></script>
+
+<script>
+    layui.config({
+        base: '' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', "jquery", "laydate", "layedit"], function () {
+        var $ = layui.jquery;
+        var laydate = layui.laydate
+            , layedit = layui.layedit
+            , form = layui.form;
+        laydate.render({
+            elem: '#startTime' //指定元素
+            , type: 'date'
+        });
+        laydate.render({
+            elem: '#endTime' //指定元素
+            , type: 'date'
+        });
+        laydate.render({
+            elem: '#startTime2' //指定元素
+            , type: 'date'
+        });
+        laydate.render({
+            elem: '#endTime2' //指定元素
+            , type: 'date'
+        });
+
+
+        //创建监听函数
+        var xhrOnProgress = function (fun) {
+            xhrOnProgress.onprogress = fun; //绑定监听
+            //使用闭包实现监听绑
+            return function () {
+                //通过$.ajaxSettings.xhr();获得XMLHttpRequest对象
+                var xhr = $.ajaxSettings.xhr();
+                //判断监听函数是否为函数
+                if (typeof xhrOnProgress.onprogress !== 'function')
+                    return xhr;
+                //如果有监听函数并且xhr对象支持绑定时就把监听函数绑定上去
+                if (xhrOnProgress.onprogress && xhr.upload) {
+                    xhr.upload.onprogress = xhrOnProgress.onprogress;
+                }
+                return xhr;
+            }
+        };
+
+        layedit.set({
+            uploadImage: {
+                url: 'saadmin/upload/upload' //接口url
+                , type: 'post' //默认post
+            }
+        });
+
+        var layeditIndex = layedit.build('details'); //建立编辑器
+        //自定义验证规则
+        form.verify({
+            details: function (value) {
+                console.log("run this");
+                layedit.sync(layeditIndex);
+            }
+        });
+
+        $(document).on("click", ".export", function () {
+            window.location.href = "system/export/exportCompany?startTime="+$("#startTime").val()+"&endTime="+$("#endTime").val();
+        });
+
+        $(document).on("click", ".export2", function () {
+            window.location.href = "system/export/exportUserGame?startTime="+$("#startTime2").val()+"&endTime="+$("#endTime2").val();
+        });
+
+    });
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title> 活动赛题目信息 </title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/style/admin.css}" media="all">
+    <style>
+        .layui-table {
+            width: 100% !important;
+        }
+    </style>
+    <base th:href="${#request.getContextPath()}+'/'">
+</head>
+<body>
+<div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+        <div class="layui-form-item">
+            <input type="hidden" name="activityId" th:value="${activityId}" id="activityId">
+            <div class="layui-inline">
+                <label class="layui-form-label"> 题目标题 </label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" placeholder="题目标题" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-user-front-search">
+                    <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                </button>
+            </div>
+
+            <div class="layui-inline">
+                <select name="topicType" lay-search id="topicType">
+                    <option value="">请选择导出题目类型</option>
+                    <option value="0">选择题</option>
+<!--                    <option value="1">填空题</option>-->
+                    <option value="2">判断题</option>
+                </select>
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn layuiadmin-btn-useradmin export" lay-event="export"><i class="layui-icon layui-icon-export layuiadmin-button-btn"></i> 导出题目信息 </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card-body">
+        <div style="padding-bottom: 10px;">
+            <button class="layui-btn layuiadmin-btn-useradmin add" data-type="add" lay-even="add">添加题目</button>
+            <button type="button" class="layui-btn" id="uploadXuanZeExcel" lay-even="uploadXuanZeExcel">
+                <i class="layui-icon">&#xe67c;</i> 导入选择题信息
+            </button>
+<!--            <button type="button" class="layui-btn" id="uploadTianKongExcel" lay-even="uploadTianKongExcel">-->
+<!--                <i class="layui-icon">&#xe67c;</i> 导入填空题信息-->
+<!--            </button>-->
+            <button type="button" class="layui-btn" id="uploadPanDuanExcel" lay-even="uploadPanDuanExcel">
+                <i class="layui-icon">&#xe67c;</i> 导入判断题信息
+            </button>
+        </div>
+
+
+        <table id="LAY-user-manage" lay-filter="LAY-user-manage"></table>
+        <table class="layui-hide" id="demo"></table>
+        <script type="text/html" id="imgTpl">
+            <img style="display: inline-block; width: 50%; height: 100%;" src={{ d.cover }}>
+        </script>
+        <script type="text/html" id="table-useradmin-webuser">
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="search"><i
+                    class="layui-icon layui-icon-edit"></i>查看</a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="del"><i
+                    class="layui-icon layui-icon-edit"></i>删除</a>
+        </script>
+    </div>
+
+    <div class="layui-inline" id="exportTopicError">
+        <label class="layui-form-label">错误信息:</label>
+        <div class="layui-input-block">
+            <textarea id = "topicError" rows="3" cols="100"></textarea>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/layui/layui.js}"></script>
+
+
+<script th:inline="none">
+    layui.config({
+        base: '' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'table', 'laydate', 'upload', 'form', "common"], function () {
+        var form = layui.form
+            , $ = layui.$
+            , table = layui.table
+            , laydate = layui.laydate
+            , upload = layui.upload
+            , form = layui.form;
+
+        var activityId = $("input[type=hidden]").val();
+        // 一开始展示数据需隐藏错误信息提示栏
+        $("#exportTopicError").hide();
+        //展示已知数据
+        table.render({
+            id: 'LAY-user-manage',
+            elem: '#LAY-user-manage',
+            url: "system/activity/selectActivityTopicPage?companyType=1&activityId=" + activityId,
+            method: "GET",
+            // where: {"id": 7,"companyType":1},
+            cols: [[
+                {type:'checkbox'},
+                {field: 'id', title: 'ID', width: 100, sort:true, align:'center'},
+                {field: 'topic_type', title: '题目类型', width: 100, align:'center',templet:function(d){
+                        var msg = "-";
+                        if (d.topicType==0){
+                            msg="选择题";
+                        }else if(d.topicType==1){
+                            msg="填空题";
+                        }else if(d.topicType==2){
+                            msg="判断题";
+                        }
+                        return msg;
+                    }},
+                {field: 'title', title: '问题标题', width: 450},
+                {title: '操作', width: 150, toolbar: '#table-useradmin-webuser', align:'center'}
+            ]],
+            page: true,
+            limit: 10,
+            skin: 'line'
+        });
+
+        // 监听搜索
+        form.on('submit(LAY-user-front-search)', function (data) {
+            var field = data.field;
+            // 先删除错误提示框内容，隐藏
+            $("#topicError").text("");
+            $("#exportTopicError").hide();
+            //执行重载
+            table.reload('LAY-user-manage', {
+                where: field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+            });
+        });
+
+        // 添加题目
+        $(document).on("click", ".add", function () {
+            // 先删除错误提示框内容，隐藏
+            $("#topicError").text("");
+            $("#exportTopicError").hide();
+            layer.open({
+                type: 2,
+                area: ['100%', '100%'],
+                title: "添加题目",
+                maxmin: true,
+                content: 'system/activity/insertOrEditInit?companyType=1&topicId=&activityId=' + activityId,
+                end: function () {
+                    // table.reload("LAY-user-manage");
+                }
+            });
+        });
+
+        // 初始时隐藏错误提示框
+        $("#exportTopicError").hide();
+        // 上传选择题库
+        upload.render({
+            elem: '#uploadXuanZeExcel'
+            ,url: 'system/activity/inputActivityFromExcel?topicType=0&companyType=1&activityId=' + activityId
+            ,accept: 'file' //普通文件
+            ,exts: 'xls|excel|xlsx' //只允许上传压缩文件
+            ,done: function(res){
+                if("0000" === res.code){
+                    layer.msg("操作成功", {time: 1000});
+                    $("#topicError").text("");
+                    $("#exportTopicError").hide();
+                }else{
+                    layer.msg("批量导入选择题失败");
+                    $("#topicError").text("");
+                    $("#topicError").text(res.msg);
+                    $("#exportTopicError").show();
+                }
+                table.reload("LAY-user-manage", {
+                    page: {
+                        where: null,
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            }
+        });
+
+        // 上传填空题库
+        upload.render({
+            elem: '#uploadTianKongExcel'
+            ,url: 'system/activity/inputActivityFromExcel?topicType=1&companyType=1&activityId=' + activityId
+            ,accept: 'file' //普通文件
+            ,exts: 'xls|excel|xlsx' //只允许上传压缩文件
+            ,done: function(res){
+                if("0000" === res.code){
+                    layer.msg("操作成功", {time: 1000});
+                    $("#topicError").text("");
+                    $("#exportTopicError").hide();
+                }else{
+                    layer.msg("批量导入填空题失败");
+                    $("#topicError").text("");
+                    $("#topicError").text(res.msg);
+                    $("#exportTopicError").show();
+                }
+                table.reload("LAY-user-manage", {
+                    page: {
+                        where: null,
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            }
+        });
+
+        // 上传判断题库
+        upload.render({
+            elem: '#uploadPanDuanExcel'
+            ,url: 'system/activity/inputActivityFromExcel?topicType=2&companyType=1&activityId=' + activityId
+            ,accept: 'file' //普通文件
+            ,exts: 'xls|excel|xlsx' //只允许上传压缩文件
+            ,done: function(res){
+                if("0000" === res.code){
+                    layer.msg("操作成功", {time: 1000});
+                    $("#topicError").text("");
+                    $("#exportTopicError").hide();
+                }else{
+                    layer.msg("批量导入判断题失败");
+                    $("#topicError").text("");
+                    $("#topicError").text(res.msg);
+                    $("#exportTopicError").show();
+                }
+                table.reload("LAY-user-manage", {
+                    page: {
+                        where: null,
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+            }
+        });
+
+        //监听工具条
+        table.on('tool(LAY-user-manage)', function (obj) {
+            var data = obj.data;
+            console.log(data)
+            console.info('data.id:' + data.id);
+            if (obj.event === 'search') {
+                layer.open({
+                    type: 2
+                    , area: ['900px', '700px']
+                    , maxmin: true
+                    , title: "查看题目"
+                    , content: 'system/activity/insertOrEditInit?companyType=1&topicId=' + data.id +'&activityId=' +activityId
+                });
+            } else if (obj.event === 'del') {
+                layer.confirm('确认删除？', function () {
+                    $.ajax({
+                        url: "system/activity/delTopic",
+                        method: "POST",
+                        data: {id: data.id},
+                        success: function (res) {
+                            if (res.success) {
+                                obj.del();
+                                //登入成功的提示与跳转
+                                layer.msg('删除成功', {
+                                    offset: '15px'
+                                    , icon: 1
+                                    , time: 1000
+                                });
+                                table.reload('LAY-user-manage');
+                            } else {
+                                layer.msg(res.msg, {time: 1000});
+                            }
+                        }
+                    });
+                    layer.closeAll();
+                });
+            }
+        });
+
+        // 导出题目信息
+        $(document).on("click", ".export", function () {
+            // 先删除错误提示框内容，隐藏
+            $("#topicError").text("");
+            $("#exportTopicError").hide();
+            var activityId = $("#activityId").val();
+            var topicType = $("#topicType").val();
+            window.location.href = "system/export/exportActivityToExcel?companyType=1&topicType=" + topicType + "&activityId=" + activityId;
+        });
+
+    });
+</script>
+
+</body>
+</html>

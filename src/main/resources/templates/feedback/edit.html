@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/style/admin.css}" media="all">
+    <link href="https://cdn.staticfile.org/wangEditor/10.0.13/wangEditor.min.css" rel="stylesheet">
+
+    <style>
+        .layui-table {
+            width: 100% !important;
+        }
+
+        .pic-div .multi-img {
+            width: 130px;
+            height: 150px;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            float: left;
+            text-align: center;
+        }
+
+        .pic-div .multi-img img {
+            width: 104px;
+            height: 100px;
+        }
+
+        .layui-elem-quote {
+            min-height: 120px;
+        }
+
+        .layui-upload-list {
+            margin: 0 !important;
+        }
+
+        .pic-div .multi-img span {
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .del-pic {
+            margin-left: 5px;
+        }
+    </style>
+    <base th:href="${#request.getContextPath()}+'/'">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body" pad15>
+                    <div class="layui-form" lay-filter="">
+                        <input type="hidden" name="id" th:value="${isEdit}?${feedback.id}">
+
+                        <!--<div class="layui-form-item">-->
+                            <!--<label class="layui-form-label">标题</label>-->
+                            <!--<div class="layui-input-block">-->
+                                <!--<input type="text" name="title" th:value="${isEdit}?${feedback.context}"-->
+                                       <!--placeholder="标题" lay-verify="required" lay-reqText="商品兑换值不能为空" required-->
+                                       <!--class="layui-input">-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">反馈内容</label>
+                            <div class="layui-input-block">
+                                <textarea cols="60" rows="18" th:text="${feedback.context}"></textarea>
+                            </div>
+                        </div>
+
+                        <!--<div class="layui-form-item">-->
+                            <!--<div class="layui-input-block">-->
+                                <!--<button class="layui-btn" lay-submit lay-filter="saveArticle"-->
+                                        <!--th:text="${isEdit}?确认修改:确认添加"></button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'feedback', 'table', "upload2", "laydate", "layedit"], function () {
+        var $ = layui.jquery
+            , upload = layui.upload2;
+        var form = layui.form
+            , $ = layui.$
+            , table = layui.table
+            , layedit = layui.layedit
+            , laydate = layui.laydate;
+
+        laydate.render({
+            elem: '#startTime', //指定元素
+            type: 'datetime'
+        });
+
+        laydate.render({
+            elem: '#endTime', //指定元素
+            type: 'datetime'
+        });
+        //创建监听函数
+        var xhrOnProgress = function (fun) {
+            xhrOnProgress.onprogress = fun; //绑定监听
+            //使用闭包实现监听绑
+            return function () {
+                //通过$.ajaxSettings.xhr();获得XMLHttpRequest对象
+                var xhr = $.ajaxSettings.xhr();
+                //判断监听函数是否为函数
+                if (typeof xhrOnProgress.onprogress !== 'function')
+                    return xhr;
+                //如果有监听函数并且xhr对象支持绑定时就把监听函数绑定上去
+                if (xhrOnProgress.onprogress && xhr.upload) {
+                    xhr.upload.onprogress = xhrOnProgress.onprogress;
+                }
+                return xhr;
+            }
+        };
+
+    });
+</script>
+</body>
+</html>

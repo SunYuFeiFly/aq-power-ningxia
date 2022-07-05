@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/style/admin.css}" media="all">
+    <style>
+        .layui-table {
+            width: 100% !important;
+        }
+    </style>
+    <base th:href="${#request.getContextPath()}+'/'">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label"> 用户名称: </label>
+                    <div class="layui-input-block">
+                        <input type="text" id="name" name="name"  class="layui-input test-item" placeholder="用户名称">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label"> 公司名称: </label>
+                    <div class="layui-input-block">
+                        <select name="companyName" lay-search>
+                            <option value="">公司名称</option>
+                            <option th:each="company : ${companyList}" th:value="${company.name}"
+                                    th:text="${company.name}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-user-front-search">
+                        <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-card-body">
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <div class="layui-inline" style="margin: 2px 6px 2px 6px">
+                    <button class="layui-btn layuiadmin-btn-useradmin add" data-type="add"><i class="layui-icon layui-icon-add-1"></i>  添加 </button>
+                </div>
+
+                <div class="layui-inline" style="margin: 2px 6px 2px 6px">
+                    <button type="button" class="layui-btn" id="uploadBaseUser"><i class="layui-icon layui-icon-upload"></i>  批量导入基础员工 </button>
+                </div>
+
+                <div class="layui-inline" style="margin: 2px 6px 2px 6px">
+                    <button class="layui-btn" data-type="getCheckData" id="getCheckData"><i class="layui-icon layui-icon-delete"></i>  批量删除已勾选基本员工 </button>
+                </div>
+            </div>
+            <table id="LAY-user-manage" lay-filter="LAY-user-manage"></table>
+
+            <script type="text/html" id="imgTpl">
+                <img style="display: inline-block; width: 50%; height: 100%;" src={{ d.cover }}>
+            </script>
+            <script type="text/html" id="table-useradmin-webuser">
+                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">
+                    <i class="layui-icon layui-icon-edit"></i> 编辑
+                </a>
+                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="del">
+                    <i class="layui-icon layui-icon-delete"></i>删除
+                </a>
+            </script>
+        </div>
+
+        <!-- 批量导入基本人员信息错误提示框 -->
+        <div class="layui-inline" id="exportTopicError">
+            <label class="layui-form-label">错误信息:</label>
+            <div class="layui-input-block">
+                <textarea id = "topicError" rows="3" cols="200"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'aBaseuser', 'table', 'laydate','upload','form'], function () {
+        var form = layui.form
+            , $ = layui.$
+            , table = layui.table
+            , laydate = layui.laydate
+            , upload = layui.upload
+            , form = layui.form;
+
+        laydate.render({
+            elem: '#time', //指定元素
+            type: 'date'
+        });
+
+
+        // 监听搜索
+        form.on('submit(LAY-user-front-search)', function (data) {
+            var field = data.field;
+            // 先删除错误提示框内容，隐藏
+            $("#topicError").text("");
+            $("#exportTopicError").hide();
+            //执行重载
+            table.reload('LAY-user-manage', {
+                where: field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+            });
+        });
+
+        $(document).on("click", ".add", function () {
+            // 先删除错误提示框内容，隐藏
+            $("#topicError").text("");
+            $("#exportTopicError").hide();
+            layer.open({
+                type: 2,
+                area: ['900px', '600px'],
+                title: "添加基本人员",
+                maxmin: true,
+                content: 'system/baseuser/edit?companyType=1&id=',
+                end: function () {
+                    table.reload("LAY-user-manage");
+                }
+            });
+        });
+
+        // 初始时隐藏错误提示框
+        $("#exportTopicError").hide();
+        // 上传基本用户信息
+        upload.render({
+            elem: '#uploadBaseUser',
+            url: 'system/baseuser/inputBaseUsersFromExcel', //此处配置你自己的上传接口即可
+            accept: 'file', //普通文件
+            before: function(obj) {
+                // 上传
+                // layer.load();
+                this.data={'companyType':'1'};
+            },
+            done: function (res) {
+                if ("0000" === res.code) {
+                    layer.msg("操作成功", {time: 1000});
+                    $("#topicError").text("");
+                    $("#exportTopicError").hide();
+                    table.reload("LAY-user-manage", {
+                        page: {
+                            where: null,
+                            curr: 1 //重新从第 1 页开始
+                        }
+                    });
+                } else {
+                    layer.msg("操作失败", {time: 1000});
+                    $("#topicError").text("");
+                    $("#topicError").text(res.msg);
+                    $("#exportTopicError").show();
+                }
+            }
+        });
+
+        // 点击批量删除已选中基本用户
+        $("#getCheckData").on("click",function() {
+            // 先删除错误提示框内容，隐藏
+            $("#topicError").text("");
+            $("#exportTopicError").hide();
+            // 获取选中数据
+            var checkStatus = table.checkStatus('LAY-user-manage'),
+            data = checkStatus.data;
+            if (checkStatus == null) {
+                layer.alert("强选择需删除基本用户信息！");
+            } else {
+                // 选中用户id集合
+                var idsArray = [];
+                for (var i = 0; i < checkStatus.data.length; i++) {
+                    idsArray.push(checkStatus.data[i].id);
+                }
+                var deleteStr = idsArray.join(",");
+                if (deleteStr.length > 25) {
+                    deleteStr = deleteStr.substring(0,25) + "......";
+                }
+                var deleteStr01 = deleteStr.length > 25 ? deleteStr.substring(0,25) + "......" : deleteStr;
+                console.log("idsArray:{}",idsArray);
+                // 打开删除确认窗口
+                layer.confirm('确认删除('+ idsArray.join(",") +')号基本用户数据吗？(与该用户绑定的游戏用户所有数据都将被清理掉)', function () {
+                    $.ajax({
+                        url: "system/baseuser/deleteBaseUsers",
+                        method: "POST",
+                        data: {ids: idsArray.join(","), id: 1},
+                        success: function (res) {
+                            if (res.success) {
+                                //登入成功的提示与跳转
+                                layer.msg('删除成功', {
+                                    offset: '15px'
+                                    , icon: 1
+                                    , time: 1000
+                                });
+                                table.reload('LAY-user-manage');
+                            } else {
+                                layer.msg(res.msg, {time: 1000});
+                            }
+                        }
+                    });
+                    layer.closeAll();
+                });
+            }
+        })
+
+        // 获取已勾选毕本用户id集合
+        window.getCheckData = function () {
+            // 获取选中数据
+            layer.alert(22222);
+            var checkStatus = table.checkStatus('LAY-user-manage'),
+                data = checkStatus.data;
+            layer.alert(JSON.stringify(data));
+            return checkStatus;
+        }
+
+    });
+</script>
+<script>
+
+
+</script>
+</body>
+</html>

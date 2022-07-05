@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/style/admin.css}" media="all">
+    <style>
+        .layui-table {
+            width: 100% !important;
+        }
+    </style>
+    <base th:href="${#request.getContextPath()}+'/'">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <input type="hidden" id="id" th:value="${id}">
+                <div class="layui-inline">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">时间</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="time" name="time"  class="layui-input test-item" placeholder="时间">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">员工姓名</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" placeholder="员工姓名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-user-front-search">
+                        <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                    </button>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label" style="width: 180px"><strong>个人活跃信息导出 :</strong></label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="startTime" placeholder="yyyy-MM-dd" name="startTime" style="height:30px;width:180px;">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label"> 结束日期：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="endTime" placeholder="yyyy-MM-dd" name="endTime" style="height:30px;width:180px;">
+                    </div>
+                    &nbsp;&nbsp;
+                    <button class="layui-btn layuiadmin-btn-useradmin export2" lay-event="export2">导出</button>
+                </div>
+
+            </div>
+        </div>
+        <div class="layui-card-body">
+
+            <table id="LAY-user-manage" lay-filter="LAY-user-manage"></table>
+            <script type="text/html" id="imgTpl">
+                <img style="display: inline-block; width: 50%; height: 100%;" src={{ d.cover }}>
+            </script>
+
+            <script type="text/html" id="table-useradmin-webuser">
+                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i
+                        class="layui-icon layui-icon-edit"></i>查看</a>
+            </script>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/layui/layui.js}"></script>
+<script>
+    layui.config({
+        base: '' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'cMemberList', 'table', "upload2", "laydate", "layedit"], function () {
+        var $ = layui.jquery
+            , upload = layui.upload2;
+        var form = layui.form
+            , $ = layui.$
+            , table = layui.table
+            , layedit = layui.layedit
+            , laydate = layui.laydate;
+
+        laydate.render({
+            elem: '#time', //指定元素
+            type: 'date',
+            format: 'yyyy-MM-dd',
+            min: "2022-03-01",
+            max: maxDate(),
+        });
+
+        laydate.render({
+            elem: '#startTime', //指定元素
+            type: 'date',
+            format: 'yyyy-MM-dd',
+            min: "2022-03-01",
+            max: maxDate(),
+        });
+
+        laydate.render({
+            elem: '#endTime', //指定元素
+            type: 'date',
+            format: 'yyyy-MM-dd',
+            min: "2022-03-01",
+            max: maxDate(),
+        });
+
+        // 设置最大可选时间
+        function maxDate() {
+            var now = new Date();
+            return now.getFullYear()+"-" + (now.getMonth()+1) + "-" + (now.getDate() - 1);
+        }
+
+        // 监听搜索
+        form.on('submit(LAY-user-front-search)', function (data) {
+            var field = data.field;
+            // 先删除错误提示框内容，隐藏
+            $("#topicError").text("");
+            $("#exportTopicError").hide();
+            //执行重载
+            table.reload('LAY-user-manage', {
+                where: field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+            });
+        });
+
+        $(document).on("click", ".export2", function () {
+            var companyId = $("#id").val();
+            if(null == companyId || "" == companyId){
+                alert("未获取到公司编号");
+                return;
+            }
+            if(("" != $("#startTime").val()) && ("" != $("#endTime").val())) {
+                window.location.href = "system/export/exportUserGame?companyId="+companyId+"&startTime="+$("#startTime").val()+"&endTime="+$("#endTime").val();
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangchen.mapper.BaseUserMapper">
+
+    <!-- 批量删除 -->
+    <delete id="deleteByIds" parameterType="int[]">
+        delete from aq_base_user where id in
+        <foreach collection="ids" item="id" index="no" open="("
+                 separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

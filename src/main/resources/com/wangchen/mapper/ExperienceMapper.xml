@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wangchen.mapper.ExperienceMapper">
+
+
+    <!--    <resultMap type="Experience" id="SysUserResult">-->
+    <!--        <id     property="id"  column="id"/>-->
+    <!--        <result property="openid"  column="openid"/>-->
+    <!--        <result property="dayExperience"  column="day_experience"/>-->
+    <!--        <result property="monthExperience"  column="month_experience"/>-->
+    <!--        <result property="createTime"  column="create_time"/>-->
+    <!--        <result property="updateTime"  column="update_time"/>-->
+    <!--        <result property="createYear"  column="create_year"/>-->
+    <!--    </resultMap>-->
+
+
+    <select id="batchQueryExperience" resultType="com.wangchen.entity.Experience">
+        select e.id, e.openid, e.day_experience, e.month_experience, e.create_time, e.update_time, e.part_month, e.part_year
+        from aq_experience e
+        where e.part_month = #{month} AND e.part_year = #{year} and e.openid in
+        <foreach collection="openIds" item="openId" separator="," open="(" close=")" index="index">
+            #{openId}
+        </foreach>
+    </select>
+
+</mapper>
