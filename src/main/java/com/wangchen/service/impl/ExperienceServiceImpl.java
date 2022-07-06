@@ -45,7 +45,7 @@ public class ExperienceServiceImpl extends ServiceImpl<ExperienceMapper, Experie
      * 每天定时更新用户积分
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = {})
     public void updateEveryDayExperience() {
         // 获取当前时间在当月中天数
         int day = DateUtil.date().dayOfMonth();

@@ -1,7 +1,6 @@
 package com.wangchen;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ArrayUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.wangchen.common.constant.Constants;
 import com.wangchen.entity.*;
@@ -10,26 +9,21 @@ import com.wangchen.mapper.CompanyPersonalRankMapper;
 import com.wangchen.mapper.CompanyRankMapper;
 import com.wangchen.mapper.UserMapper;
 import com.wangchen.service.*;
-import com.wangchen.utils.DateUtil;
 import com.wangchen.utils.DateUtils;
 import com.wangchen.vo.AllProvinceRankVo;
 import com.wangchen.vo.CompanyPersonalRankVo;
 import com.wangchen.vo.CompanyRankVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 后台功能（二期）：定时更新历史总排行、年内总排行记录（全省个人排行榜信息、公司个人排行榜信息、所有公司的排行榜）
@@ -84,6 +78,7 @@ public class RankTask {
      * 后台管理：全省个人排行榜信息（二期 历史总排行 每天凌晨00:01:00 更新）
      */
     @Scheduled(cron = "0 1 0 * * ? ")
+    // @RequestMapping("allProvinceRankTaskForAll")
     public String allProvinceRankTaskForAll() {
         try {
             Date date = Constants.SDF_YYYY_MM_DD.parse(DateUtils.getZuoTianDay());
@@ -158,6 +153,7 @@ public class RankTask {
      * 后台管理：全省个人排行榜信息（二期 年内总排行 每天凌晨00:02:30 更新）
      */
     @Scheduled(cron = "30 2 0 * * ? ")
+    // @RequestMapping("allProvinceRankTaskForYear")
     public String allProvinceRankTaskForYear() {
         try {
             Date date = Constants.SDF_YYYY_MM_DD.parse(DateUtils.getZuoTianDay());
@@ -231,6 +227,7 @@ public class RankTask {
      * 后台管理：公司个人排行榜信息(二期 历史总排行 每天凌晨00:04:00 更新)
      */
     @Scheduled(cron = "0 4 0 * * ? ")
+    // @RequestMapping("companyPersonalRankTaskForAll")
     public String companyPersonalRankTaskForAll() {
         try{
             // 单独根据公司id去查，前后查询次数过多，现采用一次查询，后再公司类型分组、分公司分组操作
@@ -315,6 +312,7 @@ public class RankTask {
      * 后台管理：公司个人排行榜信息(二期 年内总排行 每天凌晨00:05:30 更新)
      */
     @Scheduled(cron = "30 5 0 * * ? ")
+    // @RequestMapping("companyPersonalRankTaskForYear")
     public String companyPersonalRankTaskForYear() {
         try{
             // 单独根据公司id去查，前后查询次数过多，现采用一次查询，后再公司类型分组、分公司分组操作
@@ -434,9 +432,8 @@ public class RankTask {
                     }
                     // 对公司排名
                     List<CompanyRank> newCompanyRankVos = companyRankList.stream().sorted(Comparator.comparing(CompanyRank::getCompositeScore)).collect(Collectors.toList());
-                    // 重新设置排名
-                    for (int j = 1; j <= newCompanyRankVos.size(); j++) {
-                        newCompanyRankVos.get(j-1).setRankNo(j);
+                    for (int j = 0; j < newCompanyRankVos.size(); j++) {
+                        newCompanyRankVos.get(j).setRankNo(newCompanyRankVos.size() - j);
                     }
 
                     // 批量插入
@@ -452,9 +449,10 @@ public class RankTask {
 
 
     /**
-     * 后台管理：所有公司的排行榜(二期)
+     * 后台管理：所有公司的排行榜(二期 年内总排行 每天凌晨00:08:30 更新)
      */
     @Scheduled(cron = "30 8 0 * * ? ")
+    // @RequestMapping("companyRankTaskForYear")
     public String companyRankTaskForYear() {
         try{
             List<CompanyRankVo> companyRankVoList = companyRankMapper.companyRankListForYear();
@@ -490,9 +488,9 @@ public class RankTask {
                     }
                     // 对公司排名
                     List<CompanyRank> newCompanyRankVos = companyRankList.stream().sorted(Comparator.comparing(CompanyRank::getCompositeScore)).collect(Collectors.toList());
-                    // 重新设置排名
-                    for (int j = 1; j <= newCompanyRankVos.size(); j++) {
-                        newCompanyRankVos.get(j-1).setRankNo(j);
+                    // 公司排名重排
+                    for (int j = 0; j < newCompanyRankVos.size(); j++) {
+                        newCompanyRankVos.get(j).setRankNo(newCompanyRankVos.size() - j);
                     }
 
                     // 批量插入

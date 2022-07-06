@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
 
@@ -26,6 +27,7 @@ import java.util.*;
 @Slf4j                  // 日志
 @Configuration          // 配置类
 @EnableScheduling       // 支持定时任务类
+@RequestMapping("/OneVsOneTask")
 public class OneVsOneTask {
 
     @Autowired
@@ -51,6 +53,7 @@ public class OneVsOneTask {
      */
     @Scheduled(cron = "0 30 1 * * ? ")
 //    @Scheduled(cron = "*/5 * * * * ?")
+    @RequestMapping("taskActivity")
     public void taskActivity() {
         try{ //DateUtils.getZuoTianDay()
            List<String> openIdList = userOneVsOneLogService.getGameGtTenNumUser(DateUtils.getZuoTianDay());

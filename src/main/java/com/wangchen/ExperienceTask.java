@@ -57,7 +57,7 @@ public class ExperienceTask {
      */
     @Scheduled(cron = "0 10 0 * * ?")
     @ResponseBody
-//    @RequestMapping("taskEveryDayExperience01")
+    @RequestMapping("taskEveryDayExperience01")
     public Result taskEveryDayExperience01() {
         try {
             experienceService.updateEveryDayExperience();

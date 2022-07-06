@@ -26,6 +26,7 @@ public class UserTask {
      * 每天凌晨前清除游戏体验账号（每天23:58:00 进行清除）
      */
     @Scheduled(cron = "0 58 23 * * ?")
+    @RequestMapping("taskEveryDayExperience02")
     public Result taskEveryDayExperience02() {
         try {
             // 定时清除体验账户（体验用户并必回常见其他相关联数据）
